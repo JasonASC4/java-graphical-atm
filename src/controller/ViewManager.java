@@ -2,6 +2,7 @@ package controller;
 
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
 
@@ -16,7 +17,7 @@ public class ViewManager {
 	private Database db;					// a reference to the database
 	private BankAccount account;			// the user's bank account
 	private BankAccount destination;		// an account to which the user can transfer funds
-	
+
 	/**
 	 * Constructs an instance (or object) of the ViewManager class.
 	 * 
@@ -39,19 +40,21 @@ public class ViewManager {
 	 */
 	
 	public void login(String accountNumber, char[] pin) {
-		LoginView lv = ((LoginView) views.getComponents()[ATM.LOGIN_VIEW_INDEX]);
-		
 		try {
 			account = db.getAccount(Long.valueOf(accountNumber), Integer.valueOf(new String(pin)));
 			
 			if (account == null) {
+				LoginView lv = ((LoginView) views.getComponents()[ATM.LOGIN_VIEW_INDEX]);
 				lv.updateErrorMessage("Invalid account number and/or PIN.");
 			} else {
 				switchTo(ATM.HOME_VIEW);
-				lv.clear();
+				//pull name from database?
+				JOptionPane.showMessageDialog(null, "Welcome ");
+				LoginView lv = ((LoginView) views.getComponents()[ATM.LOGIN_VIEW_INDEX]);
+				lv.updateErrorMessage("");
 			}
 		} catch (NumberFormatException e) {
-			lv.updateErrorMessage("Account numbers and PINs don't have letters.");
+			// ignore
 		}
 	}
 	
@@ -88,4 +91,32 @@ public class ViewManager {
 			e.printStackTrace();
 		}
 	}
+	
+	public void closeAccount() {
+		try {			
+			int choice = JOptionPane.showConfirmDialog(
+				views,
+				"Are you sure?",
+				"Close your account",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE
+			);
+			
+			if (choice == 0) {
+				//db.closeAccount();
+				//figure out where bank number is hiding
+				System.exit(0);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public long maxAccountNumber() throws SQLException {
+		return db.getMaxAccountNumber();
+	}
+	public void insertAccountFR(BankAccount acc) {
+		db.insertAccount(acc);
+	}
+	
 }
